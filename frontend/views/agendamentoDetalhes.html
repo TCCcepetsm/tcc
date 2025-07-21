@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhes do Agendamento</title>
+    <link rel="stylesheet" href="../public/css/agendamentoDetalhes.css">
+</head>
+
+<body>
+    <div class="top-bar">
+        <a href="inicialAdmin.html">
+            <img src="../public/images/logoAdmin.png" alt="Logo da Empresa" class="logo">
+        </a>
+    </div>
+
+    <div class="card">
+        <h3>Detalhes do agendamento</h3>
+        <div id="detalhes-agendamento">
+            <div class="info-item">
+                <label>Solicitante</label>
+                <div class="info-value" id="info-nome">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>E-mail do solicitante</label>
+                <div class="info-value" id="info-email">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Telefone</label>
+                <div class="info-value" id="info-telefone">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Plano</label>
+                <div class="info-value" id="info-plano">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Endereço</label>
+                <div class="info-value" id="info-endereco">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Data solicitada</label>
+                <div class="info-value" id="info-data">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Horário solicitado</label>
+                <div class="info-value" id="info-horario">Carregando...</div>
+            </div>
+
+            <div class="info-item">
+                <label>Status</label>
+                <div class="info-value" id="info-status">Carregando...</div>
+            </div>
+
+            <div class="button-group">
+                <button id="btn-confirmar" class="btn btn-primary">Confirmar</button>
+                <button id="btn-recusar" class="btn btn-danger">Recusar</button>
+                <a href="agendamentoAdmin.html" class="btn btn-secondary">Voltar para Lista</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Obter o ID do agendamento da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const agendamentoId = urlParams.get('id');
+
+        if (!agendamentoId) {
+            alert("ID do agendamento não informado.");
+        } else {
+            // Buscar os detalhes do agendamento
+            fetch(`http://localhost:8080/api/agendamentos/${agendamentoId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro ao buscar agendamento");
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('info-nome').textContent = data.nomeCliente || 'N/A';
+                    document.getElementById('info-email').textContent = data.email || 'N/A';
+                    document.getElementById('info-telefone').textContent = data.telefone || 'N/A';
+                    document.getElementById('info-plano').textContent = data.plano || 'N/A';
+                    document.getElementById('info-endereco').textContent = data.endereco || 'N/A';
+                    document.getElementById('info-data').textContent = data.data || 'N/A';
+                    document.getElementById('info-horario').textContent = data.horario || 'N/A';
+                    document.getElementById('info-status').textContent = data.status || 'PENDENTE';
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Erro ao carregar os dados do agendamento.");
+                });
+        }
+
+        // Função para atualizar status
+        function atualizarStatus(status) {
+            fetch(`http://localhost:8080/api/agendamentos/${agendamentoId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: status })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro ao atualizar status");
+                    alert(`Agendamento ${status.toLowerCase()} com sucesso!`);
+                    document.getElementById('info-status').textContent = status;
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Erro ao atualizar o status.");
+                });
+        }
+
+        // Botões
+        document.getElementById('btn-confirmar').addEventListener('click', () => {
+            atualizarStatus('CONFIRMADO');
+        });
+
+        document.getElementById('btn-recusar').addEventListener('click', () => {
+            atualizarStatus('RECUSADO');
+        });
+    </script>
+</body>
+
+</html>
